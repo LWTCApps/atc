@@ -7,6 +7,12 @@
 <meta name="description" content="Live air traffic control audio for Lorenzo Walker Technical College Avionics students and staff.">
 <meta name="robots" content="noindex, nofollow">
 
+<!-- Tab icon: LWTC icon cluster from the brand guide.
+     For production, download these two files from the guide's Files section and point these links at your own copies. -->
+<link rel="icon" type="image/svg+xml" href="https://lwtc-brandguide.lwtc.app/assets/logos/svg/lwtc-icon-cluster.svg">
+<link rel="icon" type="image/png" href="https://lwtc-brandguide.lwtc.app/assets/logos/png/lwtc-icon-cluster.png">
+<link rel="apple-touch-icon" href="https://lwtc-brandguide.lwtc.app/assets/logos/png/lwtc-icon-cluster.png">
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
@@ -333,7 +339,7 @@ const AIRPORTS = [
       tower:     { mount: "kjax_twr_118300",  label: "Ground/Tower" },
       approach:  { mount: "kjax_app_132775",  label: "Approach/Departure" },
       departure: { same: "approach" },
-      ground:    { mount: "kjax_gnd_121900", label: "Ground " }
+      ground:    { mount: "kjax_gnd_121900", label: "Ground" }
     }
   }
 ];
@@ -508,6 +514,22 @@ function getCtx() {
   return sharedCtx;
 }
 
+// iPhone and iPad browsers (all built on WebKit) don't reliably pass live-stream
+// audio through Web Audio, and routing it can silence the stream. On those devices
+// we leave the audio alone and turn the meter off.
+const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+               (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+
+// Phones keep Web Audio suspended until a tap. Wake it on the first touch or click
+// anywhere on the page, so it is already running when the person presses play.
+function unlockAudio() {
+  if (IS_IOS) return;
+  const ctx = getCtx();
+  if (ctx && ctx.state === "suspended") ctx.resume().catch(() => {});
+}
+["pointerdown", "touchstart", "click", "keydown"].forEach((ev) =>
+  document.addEventListener(ev, unlockAudio, { passive: true }));
+
 function buildMeter() {
   const wrap = document.createElement("div");
   const bar = document.createElement("div");
@@ -569,20 +591,32 @@ function attachMeter(audio, ui) {
 
   function start() {
     if (disabled || raf) return;
+    if (IS_IOS) { disable("The level meter isn't supported on iPhone or iPad. Audio still plays."); return; }
     const ctx = getCtx();
     if (!ctx) { disable(); return; }
-    if (ctx.state === "suspended") ctx.resume();
-    if (!source) {
-      try {
-        source = ctx.createMediaElementSource(audio);
-        analyser = ctx.createAnalyser();
-        analyser.fftSize = 1024;
-        buf = new Uint8Array(analyser.fftSize);
-        source.connect(analyser);
-        analyser.connect(ctx.destination);   // keep the audio audible
-      } catch (e) { disable(); return; }
-    }
-    raf = requestAnimationFrame(tick);
+
+    // Connect only once Web Audio is running. Until then the audio element plays normally,
+    // so a suspended context can never mute the stream.
+    const run = () => {
+      if (disabled || raf || audio.paused) return;
+      if (!source) {
+        try {
+          source = ctx.createMediaElementSource(audio);
+          analyser = ctx.createAnalyser();
+          analyser.fftSize = 1024;
+          buf = new Uint8Array(analyser.fftSize);
+          source.connect(analyser);
+          analyser.connect(ctx.destination);   // keep the audio audible
+        } catch (e) { disable(); return; }
+      }
+      raf = requestAnimationFrame(tick);
+    };
+
+    if (ctx.state === "running") { run(); return; }
+    ctx.resume().then(() => {
+      if (ctx.state === "running") run();
+      else setStatus("tap", "Tap play again to start the level meter.", false);
+    }).catch(() => setStatus("tap", "Tap play again to start the level meter.", false));
   }
 
   function reset() {
@@ -592,13 +626,13 @@ function attachMeter(audio, ui) {
     if (!disabled) setStatus("idle", "Press play to see the live level.", false);
   }
 
-  function disable() {
+  function disable(message) {
     disabled = true;
     if (raf) cancelAnimationFrame(raf);
     raf = null;
     paint(0, 0);
     ui.bar.classList.add("off");
-    setStatus("off", "Level meter isn't available for this stream. Audio still plays.", false);
+    setStatus("off", message || "Level meter isn't available for this stream. Audio still plays.", false);
   }
 
   audio.addEventListener("playing", start);
