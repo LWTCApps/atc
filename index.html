@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Avionics Live ATC | Lorenzo Walker Technical College</title>
+<meta name="description" content="Live air traffic control audio for Lorenzo Walker Technical College Avionics students and staff.">
+<meta name="robots" content="noindex, nofollow">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+
+<style>
+/* ---------- LWTC tokens (from lwtc-brandguide.lwtc.app) ---------- */
+:root {
+  --ink: #231F20;
+  --white: #FFFFFF;
+  --orange: #F37026;   /* mid of #F58220 to #F05A2B */
+  --green: #92B547;    /* mid of #BDD14F to #6EA141 */
+  --gold: #FBB14A;     /* mid of #FFC45A to #F9A03C */
+  --blue: #4691A9;     /* mid of #54ADC3 to #3A7B96 */
+  --orange-grad: linear-gradient(90deg, #F58220, #F05A2B);
+  --green-grad: linear-gradient(90deg, #BDD14F, #6EA141);
+  --gold-grad: linear-gradient(90deg, #FFC45A, #F9A03C);
+  --blue-grad: linear-gradient(90deg, #54ADC3, #3A7B96);
+  --muted: #5d5758;
+  --line: #e4e1e1;
+  --tint: #f7f5f5;
+
+  --s1: 4px; --s2: 8px; --s3: 16px; --s4: 24px; --s5: 48px;
+  --r1: 4px; --r2: 12px; --r3: 48px;
+
+  --display: "Alfa Slab One", "Clarendon Black", Rockwell, "Roboto Slab", Georgia, serif;
+  --text: "Source Sans 3", "Source Sans Pro", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-padding-top: var(--s4); }
+body {
+  margin: 0;
+  background: var(--white);
+  color: var(--ink);
+  font-family: var(--text);
+  font-size: 1.0625rem;
+  line-height: 1.55;
+}
+img { max-width: 100%; display: block; }
+a { color: var(--ink); text-decoration-thickness: 2px; text-underline-offset: 3px; }
+a:hover { text-decoration-color: var(--orange); }
+:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; border-radius: var(--r1); }
+
+.wrap { width: min(1120px, 100% - 2 * var(--s4)); margin-inline: auto; }
+
+/* ---------- Header ---------- */
+.site-header { border-bottom: 1px solid var(--line); }
+.site-header .wrap {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: var(--s4); padding-block: var(--s3);
+}
+.brand img { height: 56px; width: auto; }
+.header-tag {
+  margin: 0; font-weight: 600; font-size: 1rem; text-align: right;
+}
+
+/* ---------- Hero ---------- */
+.hero { padding-block: var(--s5) var(--s5); }
+.hero .wrap {
+  display: grid; grid-template-columns: 1.15fr 1fr; gap: var(--s5); align-items: center;
+}
+.hero h1 {
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: clamp(2.25rem, 5.4vw, 4rem);
+  line-height: 1.04;
+  letter-spacing: -0.005em;
+  margin: 0 0 var(--s4);
+  max-width: 14ch;
+}
+.hero p.lede { font-size: 1.25rem; max-width: 34em; margin: 0 0 var(--s4); }
+.hero .jump {
+  display: inline-block; background: var(--ink); color: var(--white);
+  font-weight: 700; text-decoration: none;
+  padding: var(--s3) var(--s4); border-radius: var(--r2);
+}
+.hero .jump:hover { background: #3a3435; }
+
+/* The speech-bubble cluster: round forms with one square corner toward the center */
+.cluster {
+  display: grid; grid-template-columns: 1fr 1fr; gap: var(--s2);
+  margin: 0; padding: 0; list-style: none;
+}
+.cluster li {
+  aspect-ratio: 1 / 1; padding: var(--s4);
+  display: flex; flex-direction: column; justify-content: center;
+  color: var(--ink);
+}
+.cluster li:nth-child(1) { border-radius: var(--r3) var(--r3) 0 var(--r3); }
+.cluster li:nth-child(2) { border-radius: var(--r3) var(--r3) var(--r3) 0; }
+.cluster li:nth-child(3) { border-radius: var(--r3) 0 var(--r3) var(--r3); }
+.cluster li:nth-child(4) { border-radius: 0 var(--r3) var(--r3) var(--r3); }
+.cluster strong { font-family: var(--display); font-weight: 400; font-size: clamp(1.15rem, 2.4vw, 1.6rem); line-height: 1.1; }
+.cluster span { font-size: 0.98rem; line-height: 1.35; margin-top: var(--s2); }
+.tower     { background: var(--orange-grad); }
+.approach  { background: var(--green-grad); }
+.departure { background: var(--gold-grad); }
+.ground    { background: var(--blue-grad); }
+
+/* ---------- Notice strip ---------- */
+.notice { background: var(--tint); border-block: 1px solid var(--line); }
+.notice .wrap { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s4); padding-block: var(--s4); }
+.notice h2 { font-size: 1.05rem; margin: 0 0 var(--s1); font-weight: 700; }
+.notice p { margin: 0; color: var(--ink); }
+
+/* ---------- Airport picker ---------- */
+.listen { padding-block: var(--s5); }
+.listen h2 {
+  font-family: var(--display); font-weight: 400;
+  font-size: clamp(1.75rem, 3.6vw, 2.5rem); line-height: 1.1; margin: 0 0 var(--s4);
+}
+.tabs { display: flex; flex-wrap: wrap; gap: var(--s2); margin-bottom: var(--s5); }
+.tab {
+  font: inherit; font-weight: 700; color: var(--ink); background: var(--white);
+  border: 2px solid var(--ink); border-radius: var(--r2);
+  padding: var(--s2) var(--s3); cursor: pointer; text-align: left; line-height: 1.2;
+  min-height: 56px;
+}
+.tab small { display: block; font-weight: 600; font-size: 0.85rem; color: var(--muted); }
+.tab:hover { background: var(--tint); }
+.tab[aria-selected="true"] { background: var(--ink); color: var(--white); }
+.tab[aria-selected="true"] small { color: #d9d4d5; }
+
+.airport-head { margin-bottom: var(--s4); }
+.airport-head h3 { font-size: 1.5rem; margin: 0; line-height: 1.2; }
+.airport-head p { margin: var(--s1) 0 0; color: var(--muted); }
+
+/* ---------- Feed cards ---------- */
+.feeds { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s4); }
+.feed {
+  padding: var(--s4); color: var(--ink);
+  display: flex; flex-direction: column; gap: var(--s3);
+  border-radius: var(--r3) var(--r3) var(--r3) 0;
+}
+.feed:nth-child(1) { border-radius: var(--r3) var(--r3) 0 var(--r3); }
+.feed:nth-child(2) { border-radius: var(--r3) var(--r3) var(--r3) 0; }
+.feed:nth-child(3) { border-radius: var(--r3) 0 var(--r3) var(--r3); }
+.feed:nth-child(4) { border-radius: 0 var(--r3) var(--r3) var(--r3); }
+.feed header { padding-inline: var(--s2); }
+.feed h4 { font-family: var(--display); font-weight: 400; font-size: 1.75rem; line-height: 1.1; margin: 0; }
+.feed .feed-label { margin: var(--s1) 0 0; font-weight: 600; }
+.player {
+  background: var(--white); border-radius: var(--r2); padding: var(--s3);
+  display: flex; flex-direction: column; gap: var(--s2); margin-top: auto;
+}
+.player audio { width: 100%; }
+.player .msg { margin: 0; font-size: 0.95rem; }
+.player .msg[hidden] { display: none; }
+.player a.open { font-weight: 700; font-size: 0.95rem; }
+.player .status { margin: 0; font-size: 0.95rem; color: var(--muted); }
+
+/* Live level meter: 20 segments, left to right, with a peak-hold marker */
+.meter {
+  display: grid; grid-template-columns: repeat(20, 1fr); gap: 3px;
+  height: 20px; margin: 0;
+}
+.meter span { background: var(--line); border-radius: 2px; transition: background-color 60ms linear; }
+.meter span.on { background: var(--ink); }
+.meter span.on.hot { background: var(--orange); }
+.meter span.peak { background: var(--ink); opacity: 0.55; }
+.meter.off { opacity: 0.45; }
+.level-row { display: flex; align-items: center; justify-content: space-between; gap: var(--s3); }
+.level-status { margin: 0; font-size: 0.95rem; font-weight: 600; }
+.level-status.live::before {
+  content: ""; display: inline-block; width: 10px; height: 10px; margin-right: var(--s2);
+  border-radius: 50% 50% 50% 0; background: var(--orange); vertical-align: -1px;
+}
+
+.footnote { margin: var(--s4) 0 0; color: var(--muted); font-size: 0.98rem; max-width: 62ch; }
+
+/* ---------- Footer ---------- */
+.site-footer { background: var(--ink); color: var(--white); padding-block: var(--s5); }
+.site-footer .wrap { display: grid; grid-template-columns: auto 1fr; gap: var(--s5); align-items: start; }
+.site-footer img { height: 56px; width: auto; }
+.site-footer p { margin: 0 0 var(--s3); max-width: 62ch; }
+.site-footer p:last-child { margin-bottom: 0; }
+.site-footer a { color: var(--white); text-decoration-color: var(--orange); }
+.site-footer .small { font-size: 0.95rem; color: #d9d4d5; }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 860px) {
+  .hero .wrap { grid-template-columns: 1fr; }
+  .hero h1 { max-width: none; }
+  .notice .wrap { grid-template-columns: 1fr; }
+  .site-footer .wrap { grid-template-columns: 1fr; gap: var(--s4); }
+}
+@media (max-width: 640px) {
+  .header-tag { display: none; }
+  .feeds { grid-template-columns: 1fr; }
+  .feed, .feed:nth-child(n) { border-radius: var(--r3) var(--r3) var(--r3) 0; }
+  .cluster li { padding: var(--s3); border-radius: var(--r2) var(--r2) var(--r2) 0 !important; aspect-ratio: auto; min-height: 140px; }
+  .cluster span { font-size: 0.9rem; }
+}
+</style>
+</head>
+
+<body>
+
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="#" aria-label="Lorenzo Walker Technical College">
+      <!-- Primary logo (black wordmark) from the LWTC brand guide. For production, download it and host it locally. -->
+      <img src="https://lwtc-brandguide.lwtc.app/assets/logos/svg/lwtc-logo.svg" alt="Lorenzo Walker Technical College">
+    </a>
+    <p class="header-tag">Avionics program</p>
+  </div>
+</header>
+
+<main>
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="wrap">
+      <div>
+        <h1 id="hero-title">Listen to the airspace you'll work in.</h1>
+        <p class="lede">Live air traffic control from six Florida airports, for Avionics students and staff. Hear how clearances, handoffs and readbacks sound on real frequencies.</p>
+        <a class="jump" href="#listen">Choose an airport</a>
+      </div>
+
+      <ul class="cluster" aria-label="The four ATC positions on this site">
+        <li class="tower"><strong>Tower</strong><span>Clears aircraft to take off and land.</span></li>
+        <li class="approach"><strong>Approach</strong><span>Sequences arrivals toward the runway.</span></li>
+        <li class="departure"><strong>Departure</strong><span>Guides aircraft as they climb out.</span></li>
+        <li class="ground"><strong>Ground</strong><span>Directs taxiing aircraft and vehicles.</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="notice" aria-label="Source and use">
+    <div class="wrap">
+      <div>
+        <h2>Audio source</h2>
+        <p>All ATC audio on this site is supplied by <a href="https://www.liveatc.net" target="_blank" rel="noopener">LiveATC.net</a>, a network of volunteer receivers. LWTC does not record or rebroadcast it.</p>
+      </div>
+      <div>
+        <h2>LWTC students and staff only</h2>
+        <p>These streams are for LWTC students and staff. Please don't share this page or its links outside the college.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="listen" id="listen" aria-labelledby="listen-title">
+    <div class="wrap">
+      <h2 id="listen-title">Pick an airport, then press play</h2>
+      <div class="tabs" role="tablist" aria-label="Airports" id="tabs"></div>
+
+      <div id="panel" role="tabpanel" tabindex="-1" aria-live="polite"></div>
+
+      <p class="footnote">Controllers only speak when there is traffic, so silence is normal, especially on Ground and late at night. At smaller airports, one controller often handles several positions, so some feeds are combined. For listening and training only, never for navigation or flight planning.</p>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <!-- Reversed logo (white wordmark) for the dark background -->
+    <img src="https://lwtc-brandguide.lwtc.app/assets/logos/svg/lwtc-logo-reversed.svg" alt="Lorenzo Walker Technical College">
+    <div>
+      <p>ATC audio provided by <a href="https://www.liveatc.net" target="_blank" rel="noopener">LiveATC.net</a>. LiveATC.net and its volunteer feeders own and operate these streams.</p>
+      <p>Streams on this site are for use by Lorenzo Walker Technical College students and staff only.</p>
+      <p class="small">Lorenzo Walker Technical College, Avionics program.</p>
+    </div>
+  </div>
+</footer>
+
+<script>
+/* =====================================================================
+   FEED CONFIGURATION
+   ---------------------------------------------------------------------
+   Each feed has a LiveATC "mount" name. To find one:
+     1. Open the airport on LiveATC: https://www.liveatc.net/search/?icao=KXXX
+     2. Click the feed you want. The address looks like
+        https://www.liveatc.net/hlisten.php?mount=kjax_app_dep&icao=kjax
+     3. Copy the text after "mount=" (here: kjax_app_dep) into "mount" below.
+   A feed with mount: null shows an "Open on LiveATC" link instead of a player.
+   "same" means one LiveATC feed covers two positions (for example App/Dep).
+   Feeds change over time, so recheck these mounts once a term.
+   ===================================================================== */
+const STREAM_BASE = "https://d.liveatc.net/";
+
+const AIRPORTS = [
+  {
+    id: "mia", city: "Miami", icao: "KMIA", name: "Miami International",
+    feeds: {
+      tower:     { mount: "kmia3_twr_1183", label: "Tower (North)" },
+      approach:  { mount: "kmia3_app_133775",       label: "Approach #1" },
+      departure: { mount: "kmia_dep",       label: "Departure/Approach" },
+      ground:    { mount: "kmia3_gnd2",     label: "Ground" }
+    }
+  },
+  {
+    id: "rsw", city: "Fort Myers", icao: "KRSW", name: "Southwest Florida International",
+    feeds: {
+      tower: { mount: "krsw2", label: "Tower" }, approach: { same: "tower" },
+      departure: { same: "tower" }, ground: { same: "tower"}
+    }
+  },
+  {
+    id: "apf", city: "Naples", icao: "KAPF", name: "Naples Municipal",
+    feeds: {
+      tower: { mount: "kapf1_del_gnd_twr", label: "Tower" }, approach: { mount: "krsw2", label: "Approach" },
+      departure: { mount: "krsw2", label: "Departure" }, ground: { same: "tower", label: "Ground" }
+    }
+  },
+  {
+    id: "tpa", city: "Tampa Bay", icao: "KTPA", name: "Tampa International",
+    feeds: {
+      tower:     { mount: "ktpa2",             label: "Tower #1" },
+      approach:  { mount: "ktpa1_app_135500",  label: "Approach/Departure 135.5" },
+      departure: { same: "approach" },
+      ground:    { mount: null, label: "Ground" }
+    }
+  },
+  {
+    id: "mco", city: "Orlando", icao: "KMCO", name: "Orlando International",
+    feeds: {
+      tower:     { mount: "kmco1", label: "Tower (East)" },
+      approach:  { mount: "kmco6", label: "Approach (Final)" },
+      departure: { mount: "korl_kmco_app_124800", label: "Departure" },
+      ground:    { mount: null, label: "Ground" }
+    }
+  },
+  {
+    id: "jax", city: "Jacksonville", icao: "KJAX", name: "Jacksonville International",
+    feeds: {
+      tower:     { mount: "kjax_twr_118300",  label: "Ground/Tower" },
+      approach:  { mount: "kjax_app_132775",  label: "Approach/Departure" },
+      departure: { same: "approach" },
+      ground:    { mount: "kjax_gnd_121900", label: "Ground " }
+    }
+  }
+];
+
+const POSITIONS = [
+  { key: "tower",     title: "Tower" },
+  { key: "approach",  title: "Approach" },
+  { key: "departure", title: "Departure" },
+  { key: "ground",    title: "Ground" }
+];
+
+/* ---------- Rendering ---------- */
+const tabsEl  = document.getElementById("tabs");
+const panelEl = document.getElementById("panel");
+let current = AIRPORTS[0].id;
+
+function resolveFeed(airport, key) {
+  const f = airport.feeds[key];
+  if (f && f.same) return { ...airport.feeds[f.same], combinedWith: f.same };
+  return f || { mount: null };
+}
+
+function liveAtcPage(airport, feed) {
+  return feed.mount
+    ? "https://www.liveatc.net/hlisten.php?mount=" + encodeURIComponent(feed.mount) + "&icao=" + airport.icao.toLowerCase()
+    : "https://www.liveatc.net/search/?icao=" + airport.icao;
+}
+
+function renderTabs() {
+  tabsEl.innerHTML = "";
+  AIRPORTS.forEach((a) => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "tab";
+    b.id = "tab-" + a.id;
+    b.setAttribute("role", "tab");
+    b.setAttribute("aria-selected", String(a.id === current));
+    b.setAttribute("aria-controls", "panel");
+    b.tabIndex = a.id === current ? 0 : -1;
+    b.innerHTML = a.city + "<small>" + a.icao + "</small>";
+    b.addEventListener("click", () => select(a.id));
+    b.addEventListener("keydown", (e) => {
+      const i = AIRPORTS.findIndex((x) => x.id === current);
+      let n = null;
+      if (e.key === "ArrowRight") n = (i + 1) % AIRPORTS.length;
+      if (e.key === "ArrowLeft")  n = (i - 1 + AIRPORTS.length) % AIRPORTS.length;
+      if (n !== null) { e.preventDefault(); select(AIRPORTS[n].id); document.getElementById("tab-" + AIRPORTS[n].id).focus(); }
+    });
+    tabsEl.appendChild(b);
+  });
+}
+
+function renderPanel() {
+  const a = AIRPORTS.find((x) => x.id === current);
+  panelEl.setAttribute("aria-labelledby", "tab-" + a.id);
+  panelEl.innerHTML = "";
+
+  const head = document.createElement("div");
+  head.className = "airport-head";
+  head.innerHTML = "<h3></h3><p></p>";
+  head.querySelector("h3").textContent = a.city + ", FL (" + a.icao + ")";
+  head.querySelector("p").textContent = a.name;
+  panelEl.appendChild(head);
+
+  const grid = document.createElement("div");
+  grid.className = "feeds";
+
+  POSITIONS.forEach((p) => {
+    const feed = resolveFeed(a, p.key);
+    const card = document.createElement("article");
+    card.className = "feed " + p.key;
+
+    const h = document.createElement("header");
+    const h4 = document.createElement("h4");
+    h4.textContent = p.title;
+    h.appendChild(h4);
+
+    const lbl = document.createElement("p");
+    lbl.className = "feed-label";
+    if (feed.mount) {
+      lbl.textContent = feed.combinedWith
+        ? feed.label + " (same feed as " + POSITIONS.find((x) => x.key === feed.combinedWith).title + ")"
+        : feed.label;
+    } else {
+      lbl.textContent = "Feed not set up yet";
+    }
+    h.appendChild(lbl);
+    card.appendChild(h);
+
+    const box = document.createElement("div");
+    box.className = "player";
+
+    if (feed.mount) {
+      const url = STREAM_BASE + feed.mount;
+      const audio = document.createElement("audio");
+      audio.controls = true;
+      audio.preload = "none";
+      // CORS mode is required for the level meter to read the audio.
+      audio.crossOrigin = "anonymous";
+      audio.src = url;
+      audio.setAttribute("aria-label", a.city + " " + p.title + " live audio");
+
+      const msg = document.createElement("p");
+      msg.className = "msg";
+      msg.hidden = true;
+      msg.textContent = "This stream isn't responding. It may be offline, or your network may be blocking it. Try the LiveATC link below.";
+
+      const meterUI = buildMeter();
+      const meter = attachMeter(audio, meterUI);
+
+      let fellBack = false;
+      audio.addEventListener("error", () => {
+        if (!fellBack && audio.crossOrigin) {
+          // The server didn't allow CORS. Play without the meter instead of failing.
+          fellBack = true;
+          audio.removeAttribute("crossorigin");
+          audio.crossOrigin = null;
+          audio.src = url;
+          meter.disable();
+          audio.play().catch(() => {});
+          return;
+        }
+        msg.hidden = false;
+        meter.reset();
+      });
+      audio.addEventListener("playing", () => {
+        msg.hidden = true;
+        // Only one stream at a time
+        document.querySelectorAll("audio").forEach((o) => { if (o !== audio) o.pause(); });
+      });
+
+      box.appendChild(audio);
+      box.appendChild(meterUI.wrap);
+      box.appendChild(msg);
+    } else {
+      const s = document.createElement("p");
+      s.className = "status";
+      s.textContent = "Find this feed on LiveATC, if one is available for this airport.";
+      box.appendChild(s);
+      const idle = buildMeter();
+      idle.bar.classList.add("off");
+      idle.status.textContent = "No live level until a feed is added.";
+      box.appendChild(idle.wrap);
+    }
+
+    const link = document.createElement("a");
+    link.className = "open";
+    link.href = liveAtcPage(a, feed);
+    link.target = "_blank";
+    link.rel = "noopener";
+    link.textContent = feed.mount ? "Open on LiveATC.net" : "Browse " + a.icao + " feeds on LiveATC.net";
+    box.appendChild(link);
+
+    card.appendChild(box);
+    grid.appendChild(card);
+  });
+
+  panelEl.appendChild(grid);
+}
+
+/* ---------- Live level meter (Web Audio) ---------- */
+const SEGMENTS = 20;
+const FLOOR_DB = -60;          // bottom of the meter
+const TRANSMISSION_DB = -48;   // above this we call it a transmission
+let sharedCtx = null;
+
+function getCtx() {
+  if (!sharedCtx) {
+    const C = window.AudioContext || window.webkitAudioContext;
+    if (C) sharedCtx = new C();
+  }
+  return sharedCtx;
+}
+
+function buildMeter() {
+  const wrap = document.createElement("div");
+  const bar = document.createElement("div");
+  bar.className = "meter";
+  bar.setAttribute("aria-hidden", "true");
+  for (let i = 0; i < SEGMENTS; i++) bar.appendChild(document.createElement("span"));
+
+  const row = document.createElement("div");
+  row.className = "level-row";
+  const status = document.createElement("p");
+  status.className = "level-status";
+  status.setAttribute("role", "status");
+  status.textContent = "Press play to see the live level.";
+  row.appendChild(status);
+
+  wrap.appendChild(bar);
+  wrap.appendChild(row);
+  return { wrap, bar, status };
+}
+
+function attachMeter(audio, ui) {
+  const segs = Array.from(ui.bar.children);
+  let analyser = null, buf = null, raf = null, peak = 0, peakAt = 0, state = "";
+  let source = null, disabled = false;
+
+  function setStatus(next, text, live) {
+    if (state === next) return;      // only update text when it changes
+    state = next;
+    ui.status.textContent = text;
+    ui.status.classList.toggle("live", !!live);
+  }
+
+  function paint(level, peakLevel) {
+    const lit = Math.round(level * SEGMENTS);
+    const pk = Math.min(SEGMENTS - 1, Math.round(peakLevel * SEGMENTS) - 1);
+    segs.forEach((s, i) => {
+      s.className = "";
+      if (i < lit) s.className = "on" + (i >= SEGMENTS - 4 ? " hot" : "");
+      else if (i === pk && pk >= lit) s.className = "peak";
+    });
+  }
+
+  function tick(now) {
+    analyser.getByteTimeDomainData(buf);
+    let sum = 0;
+    for (let i = 0; i < buf.length; i++) { const v = (buf[i] - 128) / 128; sum += v * v; }
+    const rms = Math.sqrt(sum / buf.length);
+    const db = rms > 0 ? 20 * Math.log10(rms) : FLOOR_DB;
+    const level = Math.max(0, Math.min(1, (db - FLOOR_DB) / -FLOOR_DB));
+
+    // Peak hold for about a second, then fall
+    if (level >= peak || now - peakAt > 1000) { peak = Math.max(level, peak - 0.03); if (level >= peak) peakAt = now; }
+
+    paint(level, peak);
+    if (db > TRANSMISSION_DB) setStatus("tx", "Transmission", true);
+    else setStatus("quiet", "Quiet, no transmission right now", false);
+    raf = requestAnimationFrame(tick);
+  }
+
+  function start() {
+    if (disabled || raf) return;
+    const ctx = getCtx();
+    if (!ctx) { disable(); return; }
+    if (ctx.state === "suspended") ctx.resume();
+    if (!source) {
+      try {
+        source = ctx.createMediaElementSource(audio);
+        analyser = ctx.createAnalyser();
+        analyser.fftSize = 1024;
+        buf = new Uint8Array(analyser.fftSize);
+        source.connect(analyser);
+        analyser.connect(ctx.destination);   // keep the audio audible
+      } catch (e) { disable(); return; }
+    }
+    raf = requestAnimationFrame(tick);
+  }
+
+  function reset() {
+    if (raf) cancelAnimationFrame(raf);
+    raf = null; peak = 0;
+    paint(0, 0);
+    if (!disabled) setStatus("idle", "Press play to see the live level.", false);
+  }
+
+  function disable() {
+    disabled = true;
+    if (raf) cancelAnimationFrame(raf);
+    raf = null;
+    paint(0, 0);
+    ui.bar.classList.add("off");
+    setStatus("off", "Level meter isn't available for this stream. Audio still plays.", false);
+  }
+
+  audio.addEventListener("playing", start);
+  audio.addEventListener("pause", reset);
+  audio.addEventListener("ended", reset);
+  return { reset, disable };
+}
+
+function select(id) {
+  if (id === current) return;
+  document.querySelectorAll("audio").forEach((o) => o.pause());
+  current = id;
+  renderTabs();
+  renderPanel();
+}
+
+renderTabs();
+renderPanel();
+</script>
+</body>
+</html>
